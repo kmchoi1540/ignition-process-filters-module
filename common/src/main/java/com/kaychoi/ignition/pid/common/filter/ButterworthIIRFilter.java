@@ -31,7 +31,7 @@ public class ButterworthIIRFilter extends AbstractFilter {
      * Compute coefficients for a 2nd-order Butterworth LPF.
      * This uses a classic analog-prototype → bilinear transform approach.
      */
-    private void calculateCoefficients(double fs, double fc) {
+    protected void calculateCoefficients(double fs, double fc) {
         double ita = 1.0 / Math.tan(Math.PI * fc / fs);
         double q = Math.sqrt(2.0);
 
