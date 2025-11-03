@@ -83,11 +83,12 @@ Two expression functions are exposed for direct use inside Ignition bindings or 
 | <center>`uniqueId`</center>| string       |     ⚪    | Optional in `customFilter`, required in `storeData`. <br>Defines the persistent buffer key.<br>**Note:** If omitted in `customFilter`, a random UUID is automatically generated each cycle <br>— this resets the buffer on every evaluation, so filters like WMA may not operate continuously. |
 
 ### ⚙️ Filter Modes and Arguments
-| Mode | Filter                              | `args` format  | Description                                                                                |
-| ---- | ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------ |
-| <center>`1`</center>| **Current Weighted Moving Average** | `[weight]`     | Exponential weighting. `0 ≤ weight ≤ 1` — higher values respond faster.                    |
-| <center>`2`</center>| **Weighted Moving Average**         | `[windowSize]` | Linearly increasing weights toward the newest samples.                                     |
-| <center>`3`</center>| **Butterworth IIR (2nd order)**     | `[fsHz, fcHz]` | Low-pass filter; computes IIR coefficients on demand from sampling and cutoff frequencies. |
+|  Mode  | Filter Type                                | `args` format                                            | Description                                                                                                                                                                                |
+| :----: | ------------------------------------------ | -------------------------------------------------------- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  **1** | **Current Weighted Moving Average (CWMA)** | `[α]`<br>Example: `[0.3]`                                | Blends the current sample with the average of previous values.<br>`α ∈ [0,1]` → higher α = faster response, lower α = smoother output.                                                     |
+|  **2** | **Weighted Moving Average (WMA)**          | `[windowSize]`<br>Example: `[10]`                        | Linearly increasing weights toward the newest samples.<br>Emphasizes recent trends while suppressing random noise.                                                                         |
+|  **3** | **Butterworth IIR (2nd-order)**            | `[fsHz, fcHz]`<br>Example: `[10.0, 1.0]`                 | Classic low-pass IIR filter.<br>Derives coefficients dynamically from sampling (`fs`) and cutoff (`fc`) frequencies.                                                                       |
+| **3A** | **Adaptive Butterworth IIR**               | `[fsHz, fcHz, adaptGain]`<br>Example: `[10.0, 1.0, 0.2]` | Same as Mode 3, but cutoff `fc` adapts to input variance.<br>When signal fluctuates → `fc↑` (faster), when stable → `fc↓` (smoother).                                                      |
 
 ### ✅ Example Usage
 
@@ -162,12 +163,12 @@ This module follows a modular and layered architecture to keep filtering logic t
 This section provides concise mathematical representations of the implemented filters.
 Each operates on the most recent N samples in the input buffer.
 
-| Mode | Filter Type | Formula | Description                                                                                                                                                                         |
-|------|--------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **1** | **Current Weighted Moving Average (CWMA)** | `yₙ = α·xₙ + (1 − α)·x̄ₙ₋₁` (where `x̄ₙ₋₁ = mean of previous samples`) | Blends the **current value** xₙ with the **average of previous samples** x̄ₙ₋₁.<br>`α ∈ [0,1]` controls responsiveness <br>: Higher α → faster response; lower α → smoother output. |
-| **2** | **Weighted Moving Average (WMA)** | `yₙ = (Σ wᵢ xᵢ) / (Σ wᵢ)`,  where `wᵢ = i` | Computes a **linearly weighted average** across N samples.<br>The most recent sample xₙ has the largest weight.                                                                     |
-| **3** | **Butterworth IIR (2nd-Order Low-Pass)** | `yₙ = b₀xₙ + b₁xₙ₋₁ + b₂xₙ₋₂ − a₁yₙ₋₁ − a₂yₙ₋₂` | Classic low-pass IIR filter. <br> Coefficients `a₁,a₂,b₀,b₁,b₂` are derived from `ωc = 2π (fc/fs)`. <br>Smoothly attenuates high-frequency noise.                                       |
-
+| Mode   | Filter Type                                | Formula                                                                   | Description                                                                                                                                                                                                                                          |
+| ------ | ------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1**  | **Current Weighted Moving Average (CWMA)** | `yₙ = α·xₙ + (1 − α)·x̄ₙ₋₁` <br> where `x̄ₙ₋₁` = mean of previous samples | Blends the **latest sample** `xₙ` with the **average of all previous samples**.<br>`α ∈ [0,1]` controls responsiveness.<br>Higher α → faster response; lower α → smoother output.                                                                    |
+| **2**  | **Weighted Moving Average (WMA)**          | `yₙ = (Σ wᵢ·xᵢ) / (Σ wᵢ)`<br>where `wᵢ = i`                               | Computes a **linearly weighted mean** over the last N samples.<br>Recent samples have stronger influence. Provides short-term smoothing without phase distortion.                                                                                    |
+| **3**  | **Butterworth IIR (2nd-Order Low-Pass)**   | `yₙ = b₀xₙ + b₁xₙ₋₁ + b₂xₙ₋₂ − a₁yₙ₋₁ − a₂yₙ₋₂`                           | Classic **2nd-order recursive low-pass** design.<br>Coefficients are derived from cutoff ratio `(fc / fs)`. <br>Produces smooth roll-off with minimal ripple and stable phase.                                                                       |
+| **3A** | **Adaptive Butterworth IIR**               | `f_c(dyn) = f_c + g·√σ²`<br>where `σ² = (1/N) Σ (xᵢ − x̄)²`               | Auto-adjusts cutoff `fc` based on signal variance.<br>When input changes rapidly → `fc` increases for faster tracking.<br>When stable → `fc` decreases for stronger smoothing.<br>Uses **N (not N−1)** for variance to maintain real-time stability. |
 
 ### 📈 Visual Concept Summary
 
@@ -181,20 +182,28 @@ Raw Input Series (Examples)
 │&emsp;&emsp;Applies a linearly increasing weight to recent samples.  
 │&emsp;&emsp;Reduces noise while emphasizing short-term trends.  
 │  
-└──► **Butterworth IIR** (`fc` = 1 Hz, `fs` = 10 Hz)  
-&emsp;&emsp;2nd-order low-pass response with flat passband and stable phase characteristics.  
-&emsp;&emsp;Smoothly attenuates high-frequency components without overshoot.
+├──► **Butterworth IIR** (`fc` = 1 Hz, `fs` = 10 Hz)  
+│&emsp;&emsp;2nd-order low-pass response with flat passband and stable phase characteristics.  
+│&emsp;&emsp;Smoothly attenuates high-frequency components without overshoot.  
+│  
+└──► **Adaptive Butterworth** (`fc` = 1 Hz, `fs` = 10 Hz, `g` = 0.3)  
+&emsp;&emsp;Adjusts cutoff dynamically based on input variance.  
+&emsp;&emsp;Faster when signal changes quickly, smoother when stable.  
 
 
 ### 🧠 Comparison Summary
 
-| Property | CWMA | WMA | Butterworth IIR |
-|-----------|------|-----|-----------------|
-| **Memory** | 1 state variable (previous mean) | N samples buffer | 2 past samples (recursive form) |
-| **Responsiveness** | Tunable via α | Moderate / fixed window | Tunable via cutoff (fc/fs) |
-| **Smoothness** | High for small α | Medium | Very high (strong attenuation) |
-| **Computational cost** | O(1) | O(N) | O(1) |
-| **Phase Delay** | Minimal | Moderate | Moderate–High (IIR phase lag) |
+| Property             | CWMA                              | WMA                         | Butterworth IIR            | Adaptive Butterworth                        |
+| -------------------- | --------------------------------- | --------------------------- | -------------------------- | ------------------------------------------- |
+| **Type**             | Exponential weighted average      | Linear weighted average     | 2nd-order recursive filter | Adaptive 2nd-order recursive filter         |
+| **Core Parameter**   | α (0–1)                           | Window size (N)             | fc, fs                     | fc, fs, adaptGain                           |
+| **Memory Usage**     | 1 running mean                    | N-sample buffer             | 2 input + 2 output states  | Same as Butterworth                         |
+| **Responsiveness**   | Adjustable via α                  | Fixed by window             | Tunable via fc/fs          | Auto-adjusted by variance                   |
+| **Smoothness**       | Medium–High                       | Medium                      | High                       | Adaptive (Low–High)                         |
+| **Phase Delay**      | Minimal                           | Moderate                    | Moderate–High              | Moderate–High                               |
+| **Computation Cost** | O(1)                              | O(N)                        | O(1)                       | O(1) + variance calc (O(N))                 |
+| **Best Use Case**    | Simple smoothing / trend blending | Weighted short-term average | Stable low-pass filtering  | Adaptive noise filtering or dynamic signals |
+
 
 
 ### 🧩 Practical Guidelines
