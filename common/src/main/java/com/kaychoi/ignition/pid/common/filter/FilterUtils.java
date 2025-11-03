@@ -1,7 +1,10 @@
 package com.kaychoi.ignition.pid.common.filter;
 
 import com.inductiveautomation.ignition.common.TypeUtilities;
-import com.inductiveautomation.ignition.common.document.*;
+import com.inductiveautomation.ignition.common.document.Document;
+import com.inductiveautomation.ignition.common.document.DocumentArray;
+import com.inductiveautomation.ignition.common.document.DocumentElement;
+import com.inductiveautomation.ignition.common.document.DocumentNull;
 import com.inductiveautomation.ignition.common.expressions.ExpressionException;
 import com.inductiveautomation.ignition.common.script.adapters.PyDocumentObjectAdapter;
 import org.python.core.Py;
