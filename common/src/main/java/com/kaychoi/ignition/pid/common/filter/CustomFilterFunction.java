@@ -10,8 +10,11 @@ import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.kaychoi.ignition.pid.common.TimedObjectManager;
 import com.kaychoi.ignition.pid.common.UUIDKeyManager;
 
-import java.util.*;
-import java.util.logging.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Expression Function:
@@ -119,17 +122,42 @@ public class CustomFilterFunction extends AbstractFunction {
 
     private AbstractFilter createFilter(int mode, List<?> args, int len) throws ExpressionException {
         switch (mode) {
-            case 1: return new CurrentWeightedMovingAverageFilter(((Number) args.get(0)).doubleValue());
-            case 2: return new WeightedMovingAverageFilter(((Number) args.get(0)).intValue(), len);
-            case 3: return new ButterworthIIRFilter(
-                    ((Number) args.get(0)).doubleValue(),
-                    ((Number) args.get(1)).doubleValue());
+            case 1:
+                if (args.size() != 1)
+                    throw new ExpressionException("Mode 1 (CWMA) requires 1 argument: weight.");
+                return new CurrentWeightedMovingAverageFilter(((Number) args.get(0)).doubleValue());
+            case 2:
+                if (args.size() != 1)
+                    throw new ExpressionException("Mode 2 (WMA) requires 1 argument: windowSize.");
+                return new WeightedMovingAverageFilter(((Number) args.get(0)).intValue(), len);
+            case 3:
+                // Butterworth IIR or Adaptive Butterworth IIR
+                if (args.size() < 2 || args.size() > 3)
+                    throw new ExpressionException("Mode 3 (Butterworth) requires 2 or 3 arguments: [fs, fc, (optional adaptGain)]");
+                double fs = ((Number) args.get(0)).doubleValue();
+                double fc = ((Number) args.get(1)).doubleValue();
+                if (args.size() == 2) {
+                    // Manual Butterworth (static)
+                    return new ButterworthIIRFilter(fs, fc);
+                } else {
+                    // Adaptive
+                    double adaptGain = ((Number) args.get(2)).doubleValue();
+                    return new AdaptiveButterworthFilter(fs, fc, adaptGain);
+                }
+
             default: return new PassThroughFilter();
         }
     }
 
     private static class PassThroughFilter extends AbstractFilter {
-        @Override protected double applyFilter(double input) { return input; }
+        @Override
+        protected double applyFilter(double input) {
+            if (Double.isNaN(input) || Double.isInfinite(input)) {
+                if (lastOutput != null) return lastOutput;
+                return 0.0;
+            }
+            return input;
+        }
         @Override public void updateParameters(double[] args) {}
         @Override public void reset() {}
     }
