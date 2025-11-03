@@ -88,7 +88,7 @@ public class CustomFilterFunction extends AbstractFunction {
         if ((mode == 1 || mode == 2) && argsList.size() != 1)
             throw new ExpressionException("Mode " + mode + " requires 1 argument.");
         if (mode == 3 && !(argsList.size() == 2 || argsList.size() == 3))
-            throw new ExpressionException("Mode 3 requires 2 arguments.");
+            throw new ExpressionException("Mode 3 requires 2 or 3 arguments: [fs, fc, (optional adaptGain)].");
 
         // Create or retrieve filter state
         FilterState state = FILTER_MANAGER.getOrCreate(uuid, () -> {
@@ -112,12 +112,10 @@ public class CustomFilterFunction extends AbstractFunction {
             rebuild = true;
         }
 
-        if (!rebuild) {
-            // Try in-place parameter update
-            state.filter.updateParameters(argsArray);
-        } else {
-            // Recreate filter with the new configuration
+        if (rebuild) {
             state.filter = createFilter(mode, argsList, limited.length);
+        } else {
+            state.filter.updateParameters(argsArray);
         }
 
         // Update metadata
@@ -127,7 +125,26 @@ public class CustomFilterFunction extends AbstractFunction {
 
         // Apply filter sequentially
         double out;
-        if (mode == 1 && state.filter instanceof CurrentWeightedMovingAverageFilter) {
+
+        if (mode == 3) {
+            if (state.filter instanceof AdaptiveButterworthFilter) {
+                AdaptiveButterworthFilter f = (AdaptiveButterworthFilter) state.filter;
+                out = (limited.length < 3) ? f.filterPadded(limited) : f.filter(limited);
+            } else if (state.filter instanceof ButterworthIIRFilter) {
+                ButterworthIIRFilter f = (ButterworthIIRFilter) state.filter;
+                if (limited.length < 3) {
+                    out = f.filterPadded(limited);
+                } else {
+                    double tmp = 0.0;
+                    for (double v : limited) tmp = state.filter.filter(v);
+                    out = tmp;
+                }
+            } else {
+                double tmp = 0.0;
+                for (double v : limited) tmp = state.filter.filter(v);
+                out = tmp;
+            }
+        } else if (mode == 1 && state.filter instanceof CurrentWeightedMovingAverageFilter) {
             out = ((CurrentWeightedMovingAverageFilter) state.filter).filter(limited);
         } else {
             double tmp = 0.0;
