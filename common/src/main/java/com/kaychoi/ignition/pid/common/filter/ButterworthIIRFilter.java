@@ -5,10 +5,16 @@ package com.kaychoi.ignition.pid.common.filter;
  * - Uses bilinear transform-style coefficient generation
  * - Keeps 3-sample input and output history
  * - Supports parameter update and reset
+ * - Supports short input padding for len=1 or len=2
  *
  * Args (mode=3):
  *   args[0] = sampling frequency (fs, Hz)
  *   args[1] = cutoff frequency   (fc, Hz)
+ *
+ * Behavior:
+ *   - If inputs length == 1 → [xN, xN, xN] padded
+ *   - If inputs length == 2 → [xN-1, xN-1, xN] padded
+ *   - Normal filtering otherwise
  */
 public class ButterworthIIRFilter extends AbstractFilter {
 
@@ -50,12 +56,18 @@ public class ButterworthIIRFilter extends AbstractFilter {
         a[2] = -a2;
     }
 
+    /**
+     * Apply Butterworth filtering for a single input value.
+     * Keeps track of past 3 samples internally.
+     */
     @Override
     protected double applyFilter(double input) {
+        double xVal = sanitize(input);
+
         // Shift input history
         x[2] = x[1];
         x[1] = x[0];
-        x[0] = input;
+        x[0] = xVal;
 
         // Shift output history
         y[2] = y[1];
@@ -69,6 +81,45 @@ public class ButterworthIIRFilter extends AbstractFilter {
         return y[0];
     }
 
+    /**
+     * Filter a short input buffer with padding.
+     * len==1 → [xN, xN, xN]
+     * len==2 → [xN-1, xN-1, xN]
+     * len>=3 → normal sequential filtering
+     */
+    public double filterPadded(double[] inputs) {
+        if (inputs == null || inputs.length == 0) {
+            return (lastOutput != null) ? lastOutput : 0.0;
+        }
+
+        // len >= 3 → process normally
+        if (inputs.length >= 3) {
+            double out = 0.0;
+            for (double v : inputs)
+                out = super.filter(sanitize(v));
+            return out;
+        }
+
+        // len == 1 or len == 2 → build padded window
+        double xN = sanitize(inputs[inputs.length - 1]);
+        double xNm1 = (inputs.length >= 2) ? sanitize(inputs[inputs.length - 2]) : xN;
+
+        double[] tri;
+        if (inputs.length == 1) {
+            tri = new double[]{xN, xN, xN};
+        } else { // len == 2
+            tri = new double[]{xNm1, xNm1, xN};
+        }
+
+        double out = 0.0;
+        for (double v : tri)
+            out = super.filter(v);
+        return out;
+    }
+
+    /**
+     * Update filter coefficients dynamically (fs, fc)
+     */
     @Override
     public void updateParameters(double[] args) {
         if (args != null && args.length == 2) {
@@ -96,5 +147,15 @@ public class ButterworthIIRFilter extends AbstractFilter {
             x[i] = initialValue;
             y[i] = initialValue;
         }
+    }
+
+    /**
+     * Replace NaN/Inf with a safe fallback (lastOutput or 0.0)
+     */
+    private double sanitize(double v) {
+        if (Double.isNaN(v) || Double.isInfinite(v)) {
+            return (lastOutput != null) ? lastOutput : 0.0;
+        }
+        return v;
     }
 }
