@@ -1,0 +1,1074 @@
+{
+  "tagType": "Provider",
+  "name": "",
+  "tags": [
+    {
+      "name": "Writeable",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableLong2",
+          "dataType": "Int8",
+          "name": "WriteableLong2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableDouble1",
+          "dataType": "Float8",
+          "name": "WriteableDouble1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableInteger5",
+          "dataType": "Int4",
+          "name": "WriteableInteger5",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableFloat1",
+          "dataType": "Float4",
+          "name": "WriteableFloat1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableFloat2",
+          "dataType": "Float4",
+          "name": "WriteableFloat2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableBoolean2",
+          "dataType": "Boolean",
+          "name": "WriteableBoolean2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableInteger1",
+          "dataType": "Int4",
+          "alarms": [
+            {
+              "mode": "AboveValue",
+              "setpointA": 90.0,
+              "notes": "Level is too high",
+              "name": "Hi",
+              "priority": "Critical",
+              "displayPath": "Level Hi Alarm"
+            },
+            {
+              "mode": "BelowValue",
+              "setpointA": 10.0,
+              "notes": "The level is too low",
+              "name": "Lo",
+              "priority": "Medium",
+              "displayPath": "Level Lo Alarm"
+            }
+          ],
+          "name": "WriteableInteger1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableInteger2",
+          "dataType": "Int4",
+          "name": "WriteableInteger2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableDouble2",
+          "dataType": "Float8",
+          "name": "WriteableDouble2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableLong1",
+          "dataType": "Int8",
+          "name": "WriteableLong1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableShort1",
+          "dataType": "Int2",
+          "name": "WriteableShort1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableInteger3",
+          "dataType": "Int4",
+          "name": "WriteableInteger3",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableInteger4",
+          "dataType": "Int4",
+          "name": "WriteableInteger4",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableBoolean1",
+          "dataType": "Boolean",
+          "alarms": [
+            {
+              "setpointA": 1.0,
+              "name": "Fault",
+              "displayPath": "Alarm Fault"
+            }
+          ],
+          "name": "WriteableBoolean1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableString1",
+          "dataType": "String",
+          "name": "WriteableString1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableString2",
+          "dataType": "String",
+          "name": "WriteableString2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Writeable/WriteableShort2",
+          "dataType": "Int2",
+          "name": "WriteableShort2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        }
+      ]
+    },
+    {
+      "name": "ReadOnly",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyBoolean2",
+          "dataType": "Boolean",
+          "name": "ReadOnlyBoolean2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyShort1",
+          "dataType": "Int2",
+          "name": "ReadOnlyShort1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyFloat1",
+          "dataType": "Float4",
+          "name": "ReadOnlyFloat1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyString1",
+          "dataType": "String",
+          "name": "ReadOnlyString1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyFloat2",
+          "dataType": "Float4",
+          "name": "ReadOnlyFloat2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyDouble2",
+          "dataType": "Float8",
+          "name": "ReadOnlyDouble2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyInteger3",
+          "dataType": "Int4",
+          "name": "ReadOnlyInteger3",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyDouble1",
+          "dataType": "Float8",
+          "name": "ReadOnlyDouble1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyInteger2",
+          "dataType": "Int4",
+          "name": "ReadOnlyInteger2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyBoolean1",
+          "dataType": "Boolean",
+          "name": "ReadOnlyBoolean1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyInteger4",
+          "dataType": "Int4",
+          "name": "ReadOnlyInteger4",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyInteger1",
+          "dataType": "Int4",
+          "name": "ReadOnlyInteger1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyInteger5",
+          "dataType": "Int4",
+          "name": "ReadOnlyInteger5",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyShort2",
+          "dataType": "Int2",
+          "name": "ReadOnlyShort2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyLong2",
+          "dataType": "Int8",
+          "name": "ReadOnlyLong2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyLong1",
+          "dataType": "Int8",
+          "name": "ReadOnlyLong1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:ReadOnly/ReadOnlyString2",
+          "dataType": "String",
+          "name": "ReadOnlyString2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        }
+      ]
+    },
+    {
+      "name": "Sine",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine6",
+          "dataType": "Int8",
+          "name": "Sine6",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine8",
+          "dataType": "Float8",
+          "name": "Sine8",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine9",
+          "dataType": "Float8",
+          "name": "Sine9",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine1",
+          "dataType": "Float4",
+          "name": "Sine1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine0",
+          "dataType": "Float4",
+          "name": "Sine0",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine5",
+          "dataType": "Int4",
+          "name": "Sine5",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine2",
+          "dataType": "Float8",
+          "name": "Sine2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine7",
+          "dataType": "Int8",
+          "name": "Sine7",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine3",
+          "dataType": "Float8",
+          "name": "Sine3",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Sine/Sine4",
+          "dataType": "Int4",
+          "name": "Sine4",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        }
+      ]
+    },
+    {
+      "name": "Realistic",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic0",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic0",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic9",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic9",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic8",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic8",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic7",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic7",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic2",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic2",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic1",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic1",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic5",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic5",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic6",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic6",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic3",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic3",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Realistic/Realistic4",
+          "dataType": "Float8",
+          "historyProvider": "Sample_SQLite_Database",
+          "historicalDeadband": 0.1,
+          "name": "Realistic4",
+          "historyEnabled": true,
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        }
+      ]
+    },
+    {
+      "name": "WeightedMovingAverageFilter",
+      "typeId": "Filter",
+      "parameters": {
+        "TagIn": {
+          "dataType": "String",
+          "value": "[Sample_Tags]Realistic/Realistic0"
+        },
+        "UnitIn": {
+          "dataType": "String",
+          "value": "%"
+        }
+      },
+      "tagType": "UdtInstance",
+      "tags": [
+        {
+          "value": 2,
+          "name": "Mode",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "Args",
+          "tagType": "Folder",
+          "tags": [
+            {
+              "value": {
+                "value": [
+                  0.8
+                ]
+              },
+              "name": "CMAArg",
+              "tagType": "AtomicTag"
+            },
+            {
+              "value": {
+                "value": [
+                  15.0
+                ]
+              },
+              "name": "WMAArg",
+              "tagType": "AtomicTag"
+            },
+            {
+              "name": "IIRArg",
+              "tagType": "AtomicTag"
+            }
+          ]
+        },
+        {
+          "value": true,
+          "name": "EN",
+          "tagType": "AtomicTag"
+        },
+        {
+          "historyProvider": "Sample_SQLite_Database",
+          "historyEnabled": true,
+          "name": "PV",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "Interval",
+          "tagType": "AtomicTag"
+        },
+        {
+          "valueSource": "expr",
+          "historyProvider": "Sample_SQLite_Database",
+          "historyEnabled": true,
+          "name": "MV",
+          "tagType": "AtomicTag"
+        },
+        {
+          "value": 100,
+          "name": "Size",
+          "tagType": "AtomicTag"
+        }
+      ]
+    },
+    {
+      "name": "Ramp",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp2",
+          "dataType": "Float8",
+          "name": "Ramp2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp0",
+          "dataType": "Float8",
+          "name": "Ramp0",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp4",
+          "dataType": "Float8",
+          "name": "Ramp4",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp8",
+          "dataType": "Float8",
+          "name": "Ramp8",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp1",
+          "dataType": "Float8",
+          "name": "Ramp1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp3",
+          "dataType": "Float8",
+          "alarms": [
+            {
+              "mode": "AboveValue",
+              "setpointA": 9.0,
+              "name": "High Alarm",
+              "displayPath": "Ramp High Alarm"
+            }
+          ],
+          "name": "Ramp3",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp6",
+          "dataType": "Float8",
+          "name": "Ramp6",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp5",
+          "dataType": "Float8",
+          "name": "Ramp5",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp9",
+          "dataType": "Float8",
+          "name": "Ramp9",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Ramp/Ramp7",
+          "dataType": "Float8",
+          "name": "Ramp7",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        }
+      ]
+    },
+    {
+      "name": "ButterworthIIRFilter",
+      "typeId": "Filter",
+      "parameters": {
+        "TagIn": {
+          "dataType": "String",
+          "value": "[Sample_Tags]Realistic/Realistic0"
+        }
+      },
+      "tagType": "UdtInstance",
+      "tags": [
+        {
+          "name": "Args",
+          "tagType": "Folder",
+          "tags": [
+            {
+              "name": "CMAArg",
+              "tagType": "AtomicTag"
+            },
+            {
+              "value": {
+                "value": [
+                  100.0,
+                  5.0
+                ]
+              },
+              "name": "IIRArg",
+              "tagType": "AtomicTag"
+            },
+            {
+              "value": {
+                "value": [
+                  10.0
+                ]
+              },
+              "name": "WMAArg",
+              "tagType": "AtomicTag"
+            }
+          ]
+        },
+        {
+          "value": true,
+          "name": "EN",
+          "tagType": "AtomicTag"
+        },
+        {
+          "value": 3,
+          "name": "Mode",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "Size",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "Interval",
+          "tagType": "AtomicTag"
+        },
+        {
+          "expression": "customFilter(\r\n  {[.]EN},\r\n  3,\r\n  {[.]Size},\r\n  case({[.]Mode},\r\n  1,{[.]Args/CMAArg},\r\n  2,{[.]Args/WMAArg},\r\n  3,{[.]Args/IIRArg},\r\n  \u0027\u0027),\r\n  storeData({[.]EN}\u0026\u0026({[.]Mode}\u003e0)\u0026\u0026({[.]Mode}\u003c4),{[.]Size},{[.]PV}, \u0027[\u0027 + {DeviceName} + \u0027]\u0027 + {PathToParentFolder}),\r\n  \u0027[\u0027 + {DeviceName} + \u0027]\u0027 + {PathToParentFolder}\r\n)",
+          "historyProvider": "Sample_SQLite_Database",
+          "historyEnabled": true,
+          "name": "MV",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "PV",
+          "tagType": "AtomicTag"
+        }
+      ]
+    },
+    {
+      "name": "_types_",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "typeColor": -22784,
+          "name": "Filter",
+          "parameters": {
+            "DeviceName": {
+              "dataType": "String",
+              "value": "default"
+            },
+            "Interval": {
+              "dataType": "Integer",
+              "value": 1000
+            },
+            "TagIn": {
+              "dataType": "String"
+            },
+            "UnitIn": {
+              "dataType": "String"
+            }
+          },
+          "tagType": "UdtType",
+          "tags": [
+            {
+              "valueSource": "memory",
+              "eventScripts": [
+                {
+                  "eventid": "valueChanged",
+                  "script": "\tsystem.tag.writeAsync([\"[.]EN\"],[False])"
+                }
+              ],
+              "engHigh": 100.0,
+              "documentation": "1: CurrentWeightedMovingAverageFilter,\n2:WeightedMovingAverageFilter,\n3:ButterworthIIRFilter\nRest: No Filter",
+              "name": "Mode",
+              "tooltip": "1: CurrentWeightedMovingAverageFilter, 2:WeightedMovingAverageFilter, 3:ButterworthIIRFilter",
+              "engLimitMode": "No_Clamp",
+              "value": 0,
+              "tagType": "AtomicTag"
+            },
+            {
+              "valueSource": "memory",
+              "documentation": "Storing size of datapoints",
+              "name": "Size",
+              "tooltip": "Storing size of datapoints",
+              "value": 100,
+              "tagType": "AtomicTag"
+            },
+            {
+              "executionRate": {
+                "bindType": "parameter",
+                "binding": "{Interval}"
+              },
+              "valueSource": "expr",
+              "expression": "customFilter(\r\n  {[.]EN},\r\n  {[.]Mode},\r\n  {[.]Size},\r\n  case({[.]Mode},\r\n  1,{[.]Args/CMAArg},\r\n  2,{[.]Args/WMAArg},\r\n  3,{[.]Args/IIRArg},\r\n  \u0027\u0027),\r\n  storeData({[.]EN}\u0026\u0026({[.]Mode}\u003e0)\u0026\u0026({[.]Mode}\u003c4),{[.]Size},{[.]PV}, \u0027[\u0027 + {DeviceName} + \u0027]\u0027 + {PathToParentFolder}),\r\n  \u0027[\u0027 + {DeviceName} + \u0027]\u0027 + {PathToParentFolder}\r\n)",
+              "documentation": "Filtered PV (Manipulated Value)",
+              "sourceTagPath": "",
+              "tooltip": "Filtered PV (Manipulated Value)",
+              "tagGroup": "PID",
+              "tagType": "AtomicTag",
+              "dataType": "Float8",
+              "historyProvider": "",
+              "name": "MV",
+              "historyEnabled": false,
+              "executionMode": "FixedRate",
+              "sampleMode": "Periodic",
+              "historySampleRate": 1
+            },
+            {
+              "documentation": "Filter Arguments",
+              "name": "Args",
+              "tooltip": "Filter Arguments",
+              "tagType": "Folder",
+              "tags": [
+                {
+                  "valueSource": "memory",
+                  "dataType": "Document",
+                  "documentation": "WeightedMovingAverageFilter Parameters (Window Size \u003e 0)",
+                  "name": "WMAArg",
+                  "tooltip": "WeightedMovingAverageFilter Parameters (Window Size \u003e 0)",
+                  "value": {
+                    "value": [
+                      10
+                    ]
+                  },
+                  "tagType": "AtomicTag"
+                },
+                {
+                  "valueSource": "memory",
+                  "dataType": "Document",
+                  "documentation": "ButterworthIIRFilter Parameters (Sampling Rate(fs) \u003e 0, Cutoff Frequency(fc) \u003e 0, fc \u003e\u003d fs / 2)",
+                  "name": "IIRArg",
+                  "tooltip": "ButterworthIIRFilter Parameters (Sampling Rate(fs) \u003e 0, Cutoff Frequency(fc) \u003e 0, fc \u003e\u003d fs / 2)",
+                  "value": {
+                    "value": [
+                      100,
+                      10
+                    ]
+                  },
+                  "tagType": "AtomicTag"
+                },
+                {
+                  "valueSource": "memory",
+                  "dataType": "Document",
+                  "documentation": "CurrentWeightedMovingAverageFilter Parameters (0 \u003c\u003d Current Weight \u003c\u003d 1)",
+                  "name": "CMAArg",
+                  "tooltip": "CurrentWeightedMovingAverageFilter Parameters (0 \u003c\u003d Current Weight \u003c\u003d 1)",
+                  "value": {
+                    "value": [
+                      0.8
+                    ]
+                  },
+                  "tagType": "AtomicTag"
+                }
+              ]
+            },
+            {
+              "sourceTagPath": {
+                "bindType": "parameter",
+                "binding": "{TagIn}"
+              },
+              "valueSource": "reference",
+              "dataType": "Float8",
+              "historyProvider": "",
+              "documentation": "Original Process Value",
+              "name": "PV",
+              "tooltip": "Original Process Value",
+              "historyEnabled": false,
+              "sampleMode": "Periodic",
+              "historySampleRate": 1,
+              "tagType": "AtomicTag"
+            },
+            {
+              "valueSource": "reference",
+              "documentation": "Filter Execution Interval (ms)",
+              "sourceTagPath": "[.]Parameters.Interval",
+              "name": "Interval",
+              "tooltip": "Filter Execution Interval (ms)",
+              "engUnit": "ms",
+              "tagType": "AtomicTag"
+            },
+            {
+              "valueSource": "memory",
+              "deriveExpressionGetter": "",
+              "dataType": "Boolean",
+              "deriveExpressionSetter": "",
+              "sourceTagPath": "",
+              "name": "EN",
+              "value": false,
+              "tagType": "AtomicTag"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Random",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomBoolean1",
+          "dataType": "Boolean",
+          "name": "RandomBoolean1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomShort2",
+          "dataType": "Int2",
+          "name": "RandomShort2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomShort1",
+          "dataType": "Int2",
+          "name": "RandomShort1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomLong1",
+          "dataType": "Int8",
+          "name": "RandomLong1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomInteger1",
+          "dataType": "Int4",
+          "name": "RandomInteger1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomDouble1",
+          "dataType": "Float8",
+          "name": "RandomDouble1",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomInteger2",
+          "dataType": "Int4",
+          "name": "RandomInteger2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomDouble2",
+          "dataType": "Float8",
+          "name": "RandomDouble2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomLong2",
+          "dataType": "Int8",
+          "name": "RandomLong2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        },
+        {
+          "valueSource": "opc",
+          "opcItemPath": "ns\u003d1;s\u003d[Sample_Device]_Meta:Random/RandomBoolean2",
+          "dataType": "Boolean",
+          "name": "RandomBoolean2",
+          "tagType": "AtomicTag",
+          "opcServer": "Ignition OPC UA Server"
+        }
+      ]
+    },
+    {
+      "name": "CurrentWeightedMovingAverageFilter",
+      "typeId": "Filter",
+      "parameters": {
+        "Interval": {
+          "dataType": "Integer",
+          "value": 1000
+        },
+        "TagIn": {
+          "dataType": "String",
+          "value": "[Sample_Tags]Realistic/Realistic0"
+        },
+        "UnitIn": {
+          "dataType": "String",
+          "value": "%"
+        }
+      },
+      "tagType": "UdtInstance",
+      "tags": [
+        {
+          "historyProvider": "Sample_SQLite_Database",
+          "historyEnabled": true,
+          "name": "MV",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "Interval",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "PV",
+          "tagType": "AtomicTag"
+        },
+        {
+          "value": true,
+          "name": "EN",
+          "tagType": "AtomicTag"
+        },
+        {
+          "name": "Args",
+          "tagType": "Folder",
+          "tags": [
+            {
+              "name": "IIRArg",
+              "tagType": "AtomicTag"
+            },
+            {
+              "name": "WMAArg",
+              "tagType": "AtomicTag"
+            },
+            {
+              "value": {
+                "value": [
+                  0.4
+                ]
+              },
+              "name": "CMAArg",
+              "tagType": "AtomicTag"
+            }
+          ]
+        },
+        {
+          "value": 1,
+          "name": "Mode",
+          "tagType": "AtomicTag"
+        },
+        {
+          "value": 100,
+          "name": "Size",
+          "tagType": "AtomicTag"
+        }
+      ]
+    }
+  ]
+}

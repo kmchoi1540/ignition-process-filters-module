@@ -1,0 +1,51 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Build
+target/
+out/
+build/
+bin/
+dist/
+.gradle/
+**/build/
+**/out/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Logs
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# Ignition artifacts
+*.modl
+*.gwbk
+keystore.jks
+*.keystore
+module-signer/target/
+module-signer/build/
+
+# Maven
+.mvn/
+**/target/
+
+# Temp
+*.tmp
+*.swp
+*.swo
+
+# Local-only config
+local.properties
+
+# keep example resources
+!resources/
+!resources/**/*
