@@ -73,14 +73,14 @@ Two expression functions are exposed for direct use inside Ignition bindings or 
 | <center>`customFilter`</center>|`customFilter(enable:boolean, mode:int, size:int, args:list, inputs:list, uniqueId:string)`|	Applies a selected filter algorithm to buffered or supplied inputs and returns the filtered value.
 
 ### 🔧 Parameter Summary
-| Parameter  | Type         | Required | Description                                                                             |
-| ---------- | ------------ | :------: | --------------------------------------------------------------------------------------- |
-| <center>`enable`</center>| boolean      |     ✅    | If `false`, clears internal state and returns the last input value.                     |
-| <center>`mode`</center>| int          |     ✅    | Filter selection (1–3).                                                                 |
-| <center>`size`</center>| int          |     ✅    | Maximum buffer length (window size).                                                    |
-| <center>`args`</center>| list         |     ✅    | Filter-specific parameters (see table below).                                           |
-| <center>`inputs`</center>| list<double> |     ✅    | Ordered time-series values (oldest → newest).                                           |
-| <center>`uniqueId`</center>| string       |     ⚪    | Optional in `customFilter`, required in `storeData`. Defines the persistent buffer key. |
+| Parameter  | Type         | Required | Description                                                                                                                                                                                                                                                                                    |
+| ---------- | ------------ | :------: |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <center>`enable`</center>| boolean      |     ✅    | If `false`, clears internal state and returns the last input value.                                                                                                                                                                                                                            |
+| <center>`mode`</center>| int          |     ✅    | Filter selection (1–3).                                                                                                                                                                                                                                                                        |
+| <center>`size`</center>| int          |     ✅    | Maximum buffer length (window size).                                                                                                                                                                                                                                                           |
+| <center>`args`</center>| list         |     ✅    | Filter-specific parameters (see table below).                                                                                                                                                                                                                                                  |
+| <center>`inputs`</center>| list<double> |     ✅    | Ordered time-series values (oldest → newest).                                                                                                                                                                                                                                                  |
+| <center>`uniqueId`</center>| string       |     ⚪    | Optional in `customFilter`, required in `storeData`. <br>Defines the persistent buffer key.<br>**Note:** If omitted in `customFilter`, a random UUID is automatically generated each cycle <br>— this resets the buffer on every evaluation, so filters like WMA may not operate continuously. |
 
 ### ⚙️ Filter Modes and Arguments
 | Mode | Filter                              | `args` format  | Description                                                                                |
@@ -162,34 +162,40 @@ This module follows a modular and layered architecture to keep filtering logic t
 This section provides concise mathematical representations of the implemented filters.
 Each operates on the most recent N samples in the input buffer.
 
-| Mode  | Filter Type                                | Formula                                                         | Description                                                                                                                                                                                                 |
-| ----- | ------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1** | **Current Weighted Moving Average (CWMA)** | <code>yₙ = α·xₙ + (1 - α)·yₙ₋₁</code>                           | Exponentially weighted average emphasizing the most recent sample.  `α ∈ [0,1]` controls responsiveness — higher α → faster reaction, lower α → smoother output.                                            |
-| **2** | **Weighted Moving Average (WMA)**          | <code>yₙ = (∑ᵢጌᵢ·xᵢ) / (∑ᵢጌᵢ)</code>, where <code>wᵢ = i</code> | Linearly weighted average across a sliding window of *N* samples. The newest samples have the largest weight.                                                                                               |
-| **3** | **Butterworth IIR (2nd Order Low-pass)**   | <code>yₙ = b₀·xₙ + b₁·xₙ₋₁ + b₂·xₙ₋₂ − a₁·yₙ₋₁ − a₂·yₙ₋₂</code> | Classic low-pass IIR filter. Coefficients `a₁, a₂, b₀, b₁, b₂` are derived from the normalized cutoff frequency ω<sub>c</sub> = 2π·(f<sub>c</sub>/f<sub>s</sub>). Smoothly attenuates high-frequency noise. |
+| Mode | Filter Type | Formula | Description                                                                                                                                                                         |
+|------|--------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **1** | **Current Weighted Moving Average (CWMA)** | `yₙ = α·xₙ + (1 − α)·x̄ₙ₋₁` (where `x̄ₙ₋₁ = mean of previous samples`) | Blends the **current value** xₙ with the **average of previous samples** x̄ₙ₋₁.<br>`α ∈ [0,1]` controls responsiveness <br>: Higher α → faster response; lower α → smoother output. |
+| **2** | **Weighted Moving Average (WMA)** | `yₙ = (Σ wᵢ xᵢ) / (Σ wᵢ)`,  where `wᵢ = i` | Computes a **linearly weighted average** across N samples.<br>The most recent sample xₙ has the largest weight.                                                                     |
+| **3** | **Butterworth IIR (2nd-Order Low-Pass)** | `yₙ = b₀xₙ + b₁xₙ₋₁ + b₂xₙ₋₂ − a₁yₙ₋₁ − a₂yₙ₋₂` | Classic low-pass IIR filter. <br> Coefficients `a₁,a₂,b₀,b₁,b₂` are derived from `ωc = 2π (fc/fs)`. <br>Smoothly attenuates high-frequency noise.                                       |
+
 
 ### 📈 Visual Concept Summary
 
 Raw Input Series (Examples)  
 │  
-├──► CWMA (`α` = 0.3)  
-│&emsp;&emsp;Smooths spikes with exponential decay.  
+├──► **CWMA** (`α` = 0.3)  
+│&emsp;&emsp;Blends the current sample with the average of previous data.  
+│&emsp;&emsp;Provides smooth exponential-like decay while maintaining responsiveness.  
 │  
-├──► WMA (`window` = 10)  
-│&emsp;&emsp;Sliding weighted mean emphasizing recent samples.  
+├──► **WMA** (`window` = 10)  
+│&emsp;&emsp;Applies a linearly increasing weight to recent samples.  
+│&emsp;&emsp;Reduces noise while emphasizing short-term trends.  
 │  
-└──► Butterworth IIR (`fc` = 1Hz, `fs` = 10Hz)  
-&emsp;&emsp; Low-pass response with stable phase.
+└──► **Butterworth IIR** (`fc` = 1 Hz, `fs` = 10 Hz)  
+&emsp;&emsp;2nd-order low-pass response with flat passband and stable phase characteristics.  
+&emsp;&emsp;Smoothly attenuates high-frequency components without overshoot.
+
 
 ### 🧠 Comparison Summary
 
-| Property               | CWMA             | WMA       | Butterworth IIR          |
-| ---------------------- | ---------------- | --------- | ------------------------ |
-| **Memory**             | 1 state variable | N samples | 2 past inputs, 2 outputs |
-| **Responsiveness**     | Tunable (α)      | Moderate  | Tunable (fc/fs)          |
-| **Smoothness**         | High for small α | Medium    | Very high                |
-| **Computational cost** | O(1)             | O(N)      | O(1)                     |
-| **Phase Delay**        | Minimal          | Moderate  | Moderate–High            |
+| Property | CWMA | WMA | Butterworth IIR |
+|-----------|------|-----|-----------------|
+| **Memory** | 1 state variable (previous mean) | N samples buffer | 2 past samples (recursive form) |
+| **Responsiveness** | Tunable via α | Moderate / fixed window | Tunable via cutoff (fc/fs) |
+| **Smoothness** | High for small α | Medium | Very high (strong attenuation) |
+| **Computational cost** | O(1) | O(N) | O(1) |
+| **Phase Delay** | Minimal | Moderate | Moderate–High (IIR phase lag) |
+
 
 ### 🧩 Practical Guidelines
 
