@@ -23,10 +23,6 @@ public class CurrentWeightedMovingAverageFilter extends AbstractFilter {
     /** Smoothing weight (0.0 ~ 1.0) */
     private double alpha = 0.5;
 
-    /** Accumulated sum and count for previous samples only (for mean_prev) */
-    private double sumPrev = 0.0;
-    private long countPrev = 0L;
-
     public CurrentWeightedMovingAverageFilter(double alpha) {
         clampAlpha(alpha);
     }
@@ -61,43 +57,65 @@ public class CurrentWeightedMovingAverageFilter extends AbstractFilter {
     @Override
     public void reset() {
         super.reset();
-        sumPrev = 0.0;
-        countPrev = 0L;
     }
 
     /**
-     * Applies CWMA filtering to the given input sample.
+     * Per-sample pass-through.
+     * CWMA math is intentionally NOT implemented here to avoid double-counting
+     * when the caller already provides a history buffer (e.g., via storeData).
      */
     @Override
     protected double applyFilter(double input) {
-        // No previous samples → pass-through
-        if (countPrev == 0L) {
-            accumulatePrev(input);
-            return input;
+        // Pass-through to remain compatible with AbstractFilter’s contract.
+        return input;
+    }
+
+    /**
+     * Buffer-based CWMA:
+     *  - Treats inputs[n-1] as x[n] (the "current" sample)
+     *  - Computes mean of inputs[0..n-2] as mean_prev
+     *  - Returns y[n] = α * x[n] + (1 - α) * mean_prev
+     *
+     * Bad samples (NaN/∞) are replaced with lastOutput if available, else 0.0.
+     * lastOutput is updated with the final result y[n].
+     */
+    public double filter(double[] inputs) {
+        if (inputs == null || inputs.length == 0) {
+            return (lastOutput != null) ? lastOutput : 0.0;
         }
 
-        // Compute mean of previous samples
-        double meanPrev = sumPrev / (double) countPrev;
+        // If only one sample exists, there is no prior mean; pass-through the current sample.
+        if (inputs.length == 1) {
+            double x = sanitize(inputs[0]);
+            lastOutput = x;
+            return x;
+        }
 
-        // CWMA formula: y = α*x + (1−α)*mean_prev
-        double y = alpha * input + (1.0 - alpha) * meanPrev;
+        int n = inputs.length;
+        // Compute mean of previous samples (0..n-2).
+        double sumPrev = 0.0;
+        for (int i = 0; i < n - 1; i++) {
+            sumPrev += sanitize(inputs[i]);
+        }
+        double meanPrev = sumPrev / (n - 1);
 
-        // Update statistics for next iteration
-        accumulatePrev(input);
+        // Current sample x[n]
+        double xN = sanitize(inputs[n - 1]);
 
+        // CWMA output
+        double y = alpha * xN + (1.0 - alpha) * meanPrev;
+        // Cache last output for downstream safety substitutions
+        lastOutput = y;
         return y;
     }
 
     /**
-     * Updates the running total of previous samples.
-     * NaN or ∞ inputs are replaced by the last valid output.
+     * Replaces NaN/∞ with a safe fallback (lastOutput if available, otherwise 0.0).
      */
-    private void accumulatePrev(double x) {
-        if (Double.isNaN(x) || Double.isInfinite(x)) {
-            double safe = (lastOutput != null) ? lastOutput : 0.0;
-            x = safe;
+    private double sanitize(double v) {
+        if (Double.isNaN(v) || Double.isInfinite(v)) {
+            return (lastOutput != null) ? lastOutput : 0.0;
         }
-        sumPrev += x;
-        countPrev++;
+        return v;
     }
 }
