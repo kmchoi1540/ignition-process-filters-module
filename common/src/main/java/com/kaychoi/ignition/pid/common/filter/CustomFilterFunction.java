@@ -142,7 +142,8 @@ public class CustomFilterFunction extends AbstractFunction {
                 } else {
                     // Adaptive
                     double adaptGain = ((Number) args.get(2)).doubleValue();
-                    return new AdaptiveButterworthFilter(fs, fc, adaptGain);
+//                    return new AdaptiveButterworthFilter(fs, fc, adaptGain);
+                    return new ButterworthIIRFilter(fs, fc);
                 }
 
             default: return new PassThroughFilter();
