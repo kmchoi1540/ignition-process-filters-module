@@ -87,7 +87,7 @@ public class CustomFilterFunction extends AbstractFunction {
         // Argument validation
         if ((mode == 1 || mode == 2) && argsList.size() != 1)
             throw new ExpressionException("Mode " + mode + " requires 1 argument.");
-        if (mode == 3 && argsList.size() != 2)
+        if (mode == 3 && !(argsList.size() == 2 || argsList.size() == 3))
             throw new ExpressionException("Mode 3 requires 2 arguments.");
 
         // Create or retrieve filter state
@@ -106,8 +106,19 @@ public class CustomFilterFunction extends AbstractFunction {
 
         // Detect configuration changes
         boolean rebuild = (state.mode != mode) || (state.inputLen != limited.length);
-        if (!Arrays.equals(state.args, argsArray)) state.filter.updateParameters(argsArray);
-        if (rebuild) state.filter = createFilter(mode, argsList, limited.length);
+
+        // For mode 3, switching between ButterworthIIR and Adaptive (args length 2↔3) requires rebuild
+        if (mode == 3 && state.args != null && state.args.length != argsArray.length) {
+            rebuild = true;
+        }
+
+        if (!rebuild) {
+            // Try in-place parameter update
+            state.filter.updateParameters(argsArray);
+        } else {
+            // Recreate filter with the new configuration
+            state.filter = createFilter(mode, argsList, limited.length);
+        }
 
         // Update metadata
         state.mode = mode;
@@ -115,8 +126,14 @@ public class CustomFilterFunction extends AbstractFunction {
         state.inputLen = limited.length;
 
         // Apply filter sequentially
-        double out = 0.0;
-        for (double v : limited) out = state.filter.filter(v);
+        double out;
+        if (mode == 1 && state.filter instanceof CurrentWeightedMovingAverageFilter) {
+            out = ((CurrentWeightedMovingAverageFilter) state.filter).filter(limited);
+        } else {
+            double tmp = 0.0;
+            for (double v : limited) tmp = state.filter.filter(v);
+            out = tmp;
+        }
         return new BasicQualifiedValue(out, QualityCode.Good);
     }
 
@@ -142,8 +159,7 @@ public class CustomFilterFunction extends AbstractFunction {
                 } else {
                     // Adaptive
                     double adaptGain = ((Number) args.get(2)).doubleValue();
-//                    return new AdaptiveButterworthFilter(fs, fc, adaptGain);
-                    return new ButterworthIIRFilter(fs, fc);
+                    return new AdaptiveButterworthFilter(fs, fc, adaptGain);
                 }
 
             default: return new PassThroughFilter();
