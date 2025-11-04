@@ -62,7 +62,7 @@ public class ButterworthIIRFilter extends AbstractFilter {
      */
     @Override
     protected double applyFilter(double input) {
-        double xVal = sanitize(input);
+        double xVal = FilterUtils.sanitize(input, lastOutput);
 
         // Shift input history
         x[2] = x[1];
@@ -96,13 +96,13 @@ public class ButterworthIIRFilter extends AbstractFilter {
         if (inputs.length >= 3) {
             double out = 0.0;
             for (double v : inputs)
-                out = super.filter(sanitize(v));
+                out = super.filter(FilterUtils.sanitize(v, lastOutput));
             return out;
         }
 
         // len == 1 or len == 2 → build padded window
-        double xN = sanitize(inputs[inputs.length - 1]);
-        double xNm1 = (inputs.length >= 2) ? sanitize(inputs[inputs.length - 2]) : xN;
+        double xN = FilterUtils.sanitize(inputs[inputs.length - 1], lastOutput);
+        double xNm1 = (inputs.length >= 2) ? FilterUtils.sanitize(inputs[inputs.length - 2], lastOutput) : xN;
 
         double[] tri;
         if (inputs.length == 1) {
@@ -149,13 +149,4 @@ public class ButterworthIIRFilter extends AbstractFilter {
         }
     }
 
-    /**
-     * Replace NaN/Inf with a safe fallback (lastOutput or 0.0)
-     */
-    private double sanitize(double v) {
-        if (Double.isNaN(v) || Double.isInfinite(v)) {
-            return (lastOutput != null) ? lastOutput : 0.0;
-        }
-        return v;
-    }
 }

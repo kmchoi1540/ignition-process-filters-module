@@ -7,6 +7,7 @@ import com.inductiveautomation.ignition.common.script.adapters.PyDocumentObjectA
 import org.python.core.Py;
 import org.python.core.PyArray;
 import org.python.core.PyObject;
+import org.python.core.PySequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,67 @@ import java.util.List;
  * - If the very first value is invalid, we throw an ExpressionException
  */
 public class FilterUtils {
+
+    /* ==============================================================
+     *  ⬛ NUMERIC HELPERS
+     * ============================================================== */
+
+    public static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    /**
+     * Sanitize a numeric value.
+     * - NaN / Infinite → 0.0
+     * - Values above ±1e10 are clamped.
+     */
+    public static double sanitize(double v) {
+        if (Double.isNaN(v) || Double.isInfinite(v)) return 0.0;
+        if (v > 1e10) return 1e10;
+        if (v < -1e10) return -1e10;
+        return v;
+    }
+
+    /**
+     * Sanitize a numeric value with optional fallback to last output (legacy-compatible).
+     * - If NaN or Infinite → use lastOutput (if not null), else 0.0
+     * - Otherwise → clamp to ±1e10
+     */
+    public static double sanitize(double v, Double lastOutput) {
+        if (Double.isNaN(v) || Double.isInfinite(v)) {
+            return (lastOutput != null) ? lastOutput : 0.0;
+        }
+        if (v > 1e10) return 1e10;
+        if (v < -1e10) return -1e10;
+        return v;
+    }
+
+    public static double sanitizeAndClamp(double v, double min, double max) {
+        return clamp(sanitize(v), min, max);
+    }
+
+    public static double normalize(double value, double min, double max) {
+        if (max - min == 0) return 0;
+        return (value - min) / (max - min);
+    }
+
+    public static double mean(double[] arr, int endIndex, Double lastOutput) {
+        if (arr == null || arr.length == 0 || endIndex <= 0) return 0.0;
+        double sum = 0.0;
+        int count = Math.min(endIndex, arr.length);
+        for (int i = 0; i < count; i++) {
+            sum += sanitize(arr[i], lastOutput);
+        }
+        return sum / count;
+    }
+
+    public static double stddev(double[] arr, Double lastOutput) {
+        if (arr == null || arr.length < 2) return 0.0;
+        double m = mean(arr, arr.length - 1, lastOutput);
+        double s = 0;
+        for (double v : arr) s += (v - m) * (v - m);
+        return Math.sqrt(s / (arr.length - 1));
+    }
 
     /**
      * Convert an arbitrary structure to a double array, with forward-fill for invalid values.
@@ -196,5 +258,8 @@ public class FilterUtils {
         List<Object> fallback = new ArrayList<>(1);
         fallback.add(raw);
         return fallback;
+
+
     }
+
 }
