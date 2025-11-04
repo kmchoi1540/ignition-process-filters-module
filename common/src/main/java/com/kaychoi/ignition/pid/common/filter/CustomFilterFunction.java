@@ -10,7 +10,6 @@ import com.inductiveautomation.ignition.common.model.values.QualityCode;
 import com.kaychoi.ignition.pid.common.TimedObjectManager;
 import com.kaychoi.ignition.pid.common.UUIDKeyManager;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -69,9 +68,15 @@ public class CustomFilterFunction extends AbstractFunction {
 
         List<?> argsList = FilterUtils.normalizeToList(rawArgs);
         double[] inputs = FilterUtils.toDoubleArray(rawInputs);
-        double[] limited = (size > 0 && inputs.length > size)
-                ? Arrays.copyOfRange(inputs, inputs.length - size, inputs.length)
-                : inputs;
+
+        int effectiveLen = Math.min(size, inputs.length);
+        double[] limited;
+        if (size > 0 && inputs.length > size) {
+            limited = new double[effectiveLen];
+            System.arraycopy(inputs, inputs.length - effectiveLen, limited, 0, effectiveLen);
+        } else {
+            limited = inputs;
+        }
 
         double[] argsArray = argsList.stream()
                 .mapToDouble(v -> ((Number) v).doubleValue())
@@ -186,11 +191,7 @@ public class CustomFilterFunction extends AbstractFunction {
     private static class PassThroughFilter extends AbstractFilter {
         @Override
         protected double applyFilter(double input) {
-            if (Double.isNaN(input) || Double.isInfinite(input)) {
-                if (lastOutput != null) return lastOutput;
-                return 0.0;
-            }
-            return input;
+            return FilterUtils.sanitize(input, lastOutput);
         }
         @Override public void updateParameters(double[] args) {}
         @Override public void reset() {}

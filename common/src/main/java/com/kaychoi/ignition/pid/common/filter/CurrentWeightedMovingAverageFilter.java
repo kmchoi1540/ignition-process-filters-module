@@ -32,13 +32,11 @@ public class CurrentWeightedMovingAverageFilter extends AbstractFilter {
      * Values outside [0,1] are clamped; NaN/∞ are ignored.
      */
     public void clampAlpha(double alpha) {
-        if (Double.isNaN(alpha) || Double.isInfinite(alpha)) {
-            logger.warning("CWMA: Ignoring invalid alpha (NaN or ∞)");
-            return;
+        double safe = FilterUtils.sanitizeAndClamp(alpha, 0.0, 1.0);
+        if (safe != alpha) {
+            logger.fine(String.format("CWMA: Alpha adjusted from %.4f to %.4f", alpha, safe));
         }
-        if (alpha < 0.0) alpha = 0.0;
-        if (alpha > 1.0) alpha = 1.0;
-        this.alpha = alpha;
+        this.alpha = safe;
     }
 
     /**
@@ -64,6 +62,7 @@ public class CurrentWeightedMovingAverageFilter extends AbstractFilter {
      * CWMA math is intentionally NOT implemented here to avoid double-counting
      * when the caller already provides a history buffer (e.g., via storeData).
      */
+
     @Override
     protected double applyFilter(double input) {
         // Pass-through to remain compatible with AbstractFilter’s contract.
@@ -80,42 +79,26 @@ public class CurrentWeightedMovingAverageFilter extends AbstractFilter {
      * lastOutput is updated with the final result y[n].
      */
     public double filter(double[] inputs) {
-        if (inputs == null || inputs.length == 0) {
-            return (lastOutput != null) ? lastOutput : 0.0;
-        }
+        int n = (inputs == null) ? 0 : inputs.length;
+
+        // If only no sample exists(initial), just return the lastOutput.
+        if (n == 0) return FilterUtils.sanitize(Double.NaN, lastOutput);
 
         // If only one sample exists, there is no prior mean; pass-through the current sample.
-        if (inputs.length == 1) {
-            double x = sanitize(inputs[0]);
-            lastOutput = x;
-            return x;
-        }
+        if (n == 1) return (lastOutput = FilterUtils.sanitize(inputs[0], lastOutput));
 
-        int n = inputs.length;
         // Compute mean of previous samples (0..n-2).
-        double sumPrev = 0.0;
-        for (int i = 0; i < n - 1; i++) {
-            sumPrev += sanitize(inputs[i]);
-        }
-        double meanPrev = sumPrev / (n - 1);
+        double meanPrev = FilterUtils.mean(inputs, n - 1, lastOutput);
 
         // Current sample x[n]
-        double xN = sanitize(inputs[n - 1]);
+        double xN = FilterUtils.sanitize(inputs[n - 1], lastOutput);
 
         // CWMA output
         double y = alpha * xN + (1.0 - alpha) * meanPrev;
+
         // Cache last output for downstream safety substitutions
         lastOutput = y;
         return y;
     }
 
-    /**
-     * Replaces NaN/∞ with a safe fallback (lastOutput if available, otherwise 0.0).
-     */
-    private double sanitize(double v) {
-        if (Double.isNaN(v) || Double.isInfinite(v)) {
-            return (lastOutput != null) ? lastOutput : 0.0;
-        }
-        return v;
-    }
 }

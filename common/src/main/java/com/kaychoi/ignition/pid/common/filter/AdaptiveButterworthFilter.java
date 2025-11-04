@@ -47,7 +47,7 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
      */
     @Override
     protected double applyFilter(double input) {
-        double x = sanitize(input);
+        double x = FilterUtils.sanitize(input, lastOutput);
 
         if (autoEnabled) {
             // Local change proxy: |x - lastOutput|
@@ -100,7 +100,7 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
 
         double out = 0.0;
         for (double v : inputs) {
-            double y = super.applyFilter(sanitize(v));
+            double y = super.applyFilter(FilterUtils.sanitize(v, lastOutput));
             lastOutput = y;
             out = y;
         }
@@ -125,8 +125,8 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
             return filter(inputs);
         }
 
-        double xN   = sanitize(inputs[inputs.length - 1]);
-        double xNm1 = (inputs.length >= 2) ? sanitize(inputs[inputs.length - 2]) : xN;
+        double xN   = FilterUtils.sanitize(inputs[inputs.length - 1], lastOutput);
+        double xNm1 = (inputs.length >= 2) ? FilterUtils.sanitize(inputs[inputs.length - 2], lastOutput) : xN;
 
         double[] tri = (inputs.length == 1)
                 ? new double[]{xN, xN, xN}
@@ -134,7 +134,7 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
 
         double out = 0.0;
         for (double v : tri) {
-            double y = super.applyFilter(sanitize(v)); // direct parent math
+            double y = super.applyFilter(FilterUtils.sanitize(v, lastOutput)); // direct parent math
             lastOutput = y;
             out = y;
         }
@@ -183,7 +183,7 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
         double mean = 0.0;
         int valid = 0;
         for (double v : data) {
-            double x = sanitize(v);
+            double x = FilterUtils.sanitize(v, lastOutput);
             mean += x;
             valid++;
         }
@@ -192,20 +192,11 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
 
         double var = 0.0;
         for (double v : data) {
-            double x = sanitize(v);
+            double x = FilterUtils.sanitize(v, lastOutput);
             double d = x - mean;
             var += d * d;
         }
         return var / valid; // unbiased correction is not critical for adaptation
     }
 
-    /**
-     * Replace NaN/Inf with a safe fallback (lastOutput or 0.0).
-     */
-    private double sanitize(double v) {
-        if (Double.isNaN(v) || Double.isInfinite(v)) {
-            return (lastOutput != null) ? lastOutput : 0.0;
-        }
-        return v;
-    }
 }
