@@ -23,11 +23,11 @@ import java.util.List;
  * - double[] / Double[]
  * - Jython pyList / PyArray
  * - Ignition Document / PyDocumentObjectAdapter (with "value" field)
- * - Single values (which we then wrap into a single-element list)
+ * - Single values (which then wrapped into a single-element list)
  *
  * Also supports "forward fill" behavior:
- * - If we encounter a null/DocumentNull in the middle, we reuse the last valid value
- * - If the very first value is invalid, we throw an ExpressionException
+ * - If encounters a null/DocumentNull in the middle, this reuses the last valid value
+ * - If the very first value is invalid, throw an ExpressionException
  */
 public class FilterUtils {
 
@@ -161,14 +161,14 @@ public class FilterUtils {
     }
 
     /**
-     * Normalizes any supported input into a List<Object>.
+     * Normalizes any supported args into a List<Object>.
      *
      * @param raw input object
      * @return List of items, never null (except when raw is null)
      */
     @SuppressWarnings("unchecked")
     static List<Object> normalizeToList(Object raw) throws ExpressionException {
-        if (raw == null) return null;
+        if (raw == null || raw == "") return null;
 
         // Already a Java List
         if (raw instanceof List<?>) {
@@ -260,7 +260,6 @@ public class FilterUtils {
         List<Object> fallback = new ArrayList<>(1);
         fallback.add(raw);
         return fallback;
-
 
     }
 
