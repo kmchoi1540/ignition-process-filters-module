@@ -1,5 +1,7 @@
 package com.kaychoi.ignition.pid.common.filter;
 
+import com.inductiveautomation.ignition.common.expressions.ExpressionException;
+
 /**
  * Weighted Moving Average (WMA) filter with:
  * - Circular buffer
@@ -33,7 +35,7 @@ public class WeightedMovingAverageFilter extends AbstractFilter {
     /** Next index to write to */
     private int index = 0;
 
-    /** How many samples we have actually seen (<= totalSize) */
+    /** How many samples this has actually seen (<= totalSize) */
     private int count = 0;
 
     public WeightedMovingAverageFilter(int windowSize, int totalSize) {
@@ -69,11 +71,11 @@ public class WeightedMovingAverageFilter extends AbstractFilter {
     }
 
     @Override
-    public void updateParameters(double[] args) {
+    public void updateParameters(double[] args) throws ExpressionException {
         if (args != null && args.length >= 1) {
             int newWindow = (int) args[0];
             if (newWindow <= 0) {
-                throw new IllegalArgumentException("windowSize must be positive");
+                throw new ExpressionException("windowSize must be positive");
             }
             int clamped = Math.min(newWindow, this.totalSize);
             if (clamped != this.windowSize) {
@@ -134,6 +136,6 @@ public class WeightedMovingAverageFilter extends AbstractFilter {
     public void reset() {
         index = 0;
         count = 0;
-        // we keep buffer contents; they will be overwritten as new inputs arrive
+        // This keeps buffer contents; they will be overwritten as new inputs arrive
     }
 }
