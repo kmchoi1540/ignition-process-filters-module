@@ -1,5 +1,7 @@
 package com.kaychoi.ignition.pid.common.filter;
 
+import com.inductiveautomation.ignition.common.expressions.ExpressionException;
+
 /**
  * Adaptive Butterworth IIR Filter (2nd order, low-pass)
  *
@@ -14,131 +16,120 @@ package com.kaychoi.ignition.pid.common.filter;
  * Args:
  *  - fs : Sampling rate (Hz) > 0
  *  - fc : Base cutoff frequency (Hz) > 0 and < fs/2
- *  - adaptGain : Gain factor for fc tuning (null or <= 0 → manual)
+ *  - adaptGain : Gain factor for fc tuning (null or <= 0 → manual) [0,1]
+ *
+ * Adaptation Logic:
+ *  - Activity measure: EWMA of |x[n] - x[n-1]|
+ *     activity[n] = a * |dx[n]| + (1-a) * activity[n-1], with a=0.2 (default)
+ *  - Map activity (0...∞) → g in [0,1):  g = activity / (1 + activity)
+ *      (This is a smooth, saturating mapping that avoids unbounded growth.)
+ *  - Adjust cutoff:
+ *     fc' = baseFc * (1 + adaptGain * g)
+ *     Small activity → fc' ≈ baseFc (more smoothing)
+ *     Large activity → fc' increases toward baseFc*(1+adaptGain) (faster tracking)
  *
  * Notes:
  *  - If adaptGain ≥ 1 → clamped to 1.0 by default.
+ *   - To avoid excessive biquad retunes, this only retunes when |fc' - fcCurrent|
+ *     exceeds a tiny epsilon (~1e-9), which is enough to skip numerical noise.
+ *   - For very short buffers (len < 3), this uses a simple padding sequence to
+ *     stabilize early calls (same philosophy as your existing codebase).
  */
 public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
 
-    private double fs;
-    private double baseFc;
-    private double adaptGain;   // 0.0 → manual (no adaptation)
-    private boolean autoEnabled;
 
-    public AdaptiveButterworthFilter(double fs, double baseFc, Double adaptGain) {
-        super(fs, baseFc); // Initialize as fixed Butterworth first
-        this.fs = (fs > 0.0) ? fs : 1.0;
-        this.baseFc = (baseFc > 0.0) ? baseFc : 0.1;
+    /** Small epsilon to protect denominators / Nyquist boundary */
+    private static final double EPS = 1e-12;
 
-        if (adaptGain == null || adaptGain <= 0.0) {
-            this.adaptGain = 0.0;
-            this.autoEnabled = false;
-        } else {
-            this.adaptGain = Math.min(adaptGain, 1.0);
-            this.autoEnabled = true;
-        }
+    /** Soft floors for parameters */
+    private static final double FS_MIN = 1e-6;   // minimal positive fs
+    private static final double FC_MIN = 1e-9;   // minimal positive cutoff
+
+    /** EWMA smoothing factor for activity, can be tuned (0<alphaAct<=1) */
+    private double alphaAct = 0.2;
+
+    /** Runtime parameters */
+    private double fs = 1.0;
+    private double fcBase = 0.1;
+    private double adaptGain = 0.0;      // [0..1]
+
+    /** Current effective cutoff applied to parent filter */
+    private double currentFc = 0.1;
+
+    /** Activity tracker (EWMA of |x[n]-x[n-1]|) */
+    private double activityEwma = 0.0;
+
+    /**
+     * Constructor for either static or adaptive use.
+     * - If adaptGain is null → static Butterworth with (fs, fc).
+     * - If adaptGain is non-null → the adaptive path is enabled.
+     */
+
+    public AdaptiveButterworthFilter(double fs, double fcBase, double adaptGain) throws ExpressionException {
+        super(Math.max(fs, FS_MIN),
+                sanitizeFc(fcBase, Math.max(fs, FS_MIN))); // Initialize as fixed Butterworth first
+        // Initialize our parameters with hard clamps
+        this.fs = Math.max(fs, FS_MIN);
+
+        double nyq = 0.5 * this.fs;
+        this.fcBase = Math.min(
+                Math.max(fcBase, FC_MIN),
+                Math.max(nyq - EPS, FC_MIN)
+        );
+
+        // clamp adaptGain to [0,1]
+        if (adaptGain < 0.0) adaptGain = 0.0;
+        else if (adaptGain > 1.0) adaptGain = 1.0;
+        this.adaptGain = adaptGain;
+
+        this.currentFc = this.fcBase;
+
+        // Ensure parent coefficients reflect the base cutoff
+        super.updateParameters(new double[]{ this.fs, this.fcBase });
+    }
+
+    /** Helper: sanitize a proposed fc against fs' Nyquist bound. */
+    private static double sanitizeFc(double fc, double fs) {
+        double nyq = 0.5 * Math.max(fs, FS_MIN);
+        if (fc <= 0.0) fc = FC_MIN;
+        return Math.min(fc, Math.max(nyq - EPS, FC_MIN));
     }
 
     /**
-     * Per-sample adaptive filtering:
-     *  - Uses a local change proxy to adjust fc on the fly.
-     *  - Keeps parent filter state (x[], y[]) and refreshes coefficients.
+     * Per-sample adaptive step:
+     *   - Update activity EWMA
+     *   - Map to [0..1], compute fc'
+     *   - Clip fc' to valid range and update parent coeffs if changed
+     *   - Run Butterworth step via parent
      */
     @Override
     protected double applyFilter(double input) {
-        double x = FilterUtils.sanitize(input, lastOutput);
+        final double prev = (lastOutput == null) ? input : lastOutput;
+        final double x = FilterUtils.sanitize(input, prev);
 
-        if (autoEnabled) {
-            // Local change proxy: |x - lastOutput|
-            double change = (lastOutput != null) ? Math.abs(x - lastOutput) : 0.0;
-            double fcDynamic = baseFc + adaptGain * change;
+        // 1) Activity update (EWMA)
+        final double diff = Math.abs(x - prev);
+        activityEwma = (1.0 - alphaAct) * activityEwma + alphaAct * diff;
 
-            // Stability clamps
-            if (fs <= 0) fs = 1.0;
-            double nyquist = fs / 2.0;
-            if (fcDynamic < 1e-6) fcDynamic = 1e-6;
-            if (fcDynamic >= nyquist) fcDynamic = nyquist * 0.99;
+        // 2) Map activity → [0..1] with a monotone saturating function
+        final double g = activityEwma / (activityEwma + 1.0); // bounded
 
-            // Recompute coefficients in place
-            calculateCoefficients(fs, fcDynamic);
+        // 3) Adapt cutoff
+        double fcPrime = fcBase * (1.0 + adaptGain * g);
+
+        // 4) Hard-clip to (0, fs/2 - EPS]
+        final double nyq = 0.5 * fs;
+        fcPrime = Math.max(FC_MIN, Math.min(fcPrime, Math.max(nyq - EPS, FC_MIN)));
+
+        // 5) retune only if meaningful
+        double rel = Math.abs(fcPrime - this.currentFc) / Math.max(this.currentFc, 1e-9);
+        if (rel > 1e-6) {
+            this.currentFc = fcPrime;
+            calculateCoefficients(this.fs, this.currentFc); // No reset
         }
-        // Call parent math directly (no wrapper), AbstractFilter.filter() will set lastOutput for us.
+
+        // 6) Run the IIR step (parent holds internal states/coeffs)
         return super.applyFilter(x);
-    }
-
-    /**
-     * Buffer-based adaptive filtering with short-window padding.
-     *  - len==1 → [xN, xN, xN]
-     *  - len==2 → [xN-1, xN-1, xN]
-     *  - len>=3 → normal adaptive over the full buffer
-     */
-    public double filter(double[] inputs) {
-        if (inputs == null || inputs.length == 0)
-            return (lastOutput != null) ? lastOutput : 0.0;
-
-        if (inputs.length < 3) {
-            // Delegate to padded path for small windows
-            return filterPadded(inputs);
-        }
-
-        double fcDynamic = baseFc;
-        if (autoEnabled) {
-            double variance = calcVariance(inputs);
-            double delta = adaptGain * Math.sqrt(variance);
-            fcDynamic = baseFc + delta;
-        }
-
-        // Stability clamps
-        if (fs <= 0) fs = 1.0;
-        double nyquist = fs / 2.0;
-        if (fcDynamic < 1e-6) fcDynamic = 1e-6;
-        if (fcDynamic >= nyquist) fcDynamic = nyquist * 0.99;
-
-        // Update coefficients once for the batch
-        calculateCoefficients(fs, fcDynamic);
-
-        double out = 0.0;
-        for (double v : inputs) {
-            double y = super.applyFilter(FilterUtils.sanitize(v, lastOutput));
-            lastOutput = y;
-            out = y;
-        }
-        return out;
-    }
-
-    /**
-     * Short-window padded buffer filtering for len < 3:
-     *  - len==1 → [xN, xN, xN]
-     *  - len==2 → [xN-1, xN-1, xN]
-     *
-     * Uses per-sample adaptive path semantics, i.e. each padded sample
-     * will still be processed through applyFilter→calculateCoefficients
-     * (if autoEnabled), so adaptation remains consistent.
-     */
-    public double filterPadded(double[] inputs) {
-        if (inputs == null || inputs.length == 0)
-            return (lastOutput != null) ? lastOutput : 0.0;
-
-        if (inputs.length >= 3) {
-            // Fallback to normal buffer path
-            return filter(inputs);
-        }
-
-        double xN   = FilterUtils.sanitize(inputs[inputs.length - 1], lastOutput);
-        double xNm1 = (inputs.length >= 2) ? FilterUtils.sanitize(inputs[inputs.length - 2], lastOutput) : xN;
-
-        double[] tri = (inputs.length == 1)
-                ? new double[]{xN, xN, xN}
-                : new double[]{xNm1, xNm1, xN};
-
-        double out = 0.0;
-        for (double v : tri) {
-            double y = super.applyFilter(FilterUtils.sanitize(v, lastOutput)); // direct parent math
-            lastOutput = y;
-            out = y;
-        }
-        return out;
     }
 
     /**
@@ -146,57 +137,31 @@ public class AdaptiveButterworthFilter extends ButterworthIIRFilter {
      * Accepts (fs, fc) or (fs, fc, gain). Resets histories to avoid transients.
      */
     @Override
-    public void updateParameters(double[] args) {
-        if (args == null) return;
-        if (!(args.length == 2 || args.length == 3)) return;
+    public void updateParameters(double[] args) throws ExpressionException {
+        if (args == null || args.length < 3) return;
 
-        double newFs = (args[0] > 0.0) ? args[0] : this.fs;
-        double newFc = (args[1] > 0.0) ? args[1] : this.baseFc;
+        double newFs = Math.max(args[0], FS_MIN);
+        double nyq = 0.5 * newFs;
 
-        double ny = newFs / 2.0;
-        if (newFc >= ny) newFc = ny * 0.99;
+        double newFcBase = args[1];
+        if (newFcBase <= 0.0) newFcBase = FC_MIN;
+        newFcBase = Math.min(newFcBase, Math.max(nyq - EPS, FC_MIN));
 
+        double newAdapt = args[2];
+        if (newAdapt < 0.0) newAdapt = 0.0;
+        else if (newAdapt > 1.0) newAdapt = 1.0;
+
+        boolean changed = (this.fs != newFs) || (this.fcBase != newFcBase) || (this.adaptGain != newAdapt);
         this.fs = newFs;
-        this.baseFc = newFc;
+        this.fcBase = newFcBase;
+        this.adaptGain = newAdapt;
 
-        if (args.length == 3) {
-            double g = args[2];
-            if (g <= 0.0) {
-                this.adaptGain = 0.0;
-                this.autoEnabled = false;
-            } else {
-                this.adaptGain = Math.min(g, 1.0);
-                this.autoEnabled = true;
-            }
+        if (changed) {
+            // Reset currentFc to base and recompute once
+            this.currentFc = this.fcBase;
+            super.updateParameters(new double[]{ this.fs, this.currentFc });
         }
-
-        calculateCoefficients(this.fs, this.baseFc);
-        reset();
     }
-
-    /**
-     * Compute sample variance with NaN/Inf safety.
-     */
-    private double calcVariance(double[] data) {
-        if (data.length < 2) return 0.0;
-
-        double mean = 0.0;
-        int valid = 0;
-        for (double v : data) {
-            double x = FilterUtils.sanitize(v, lastOutput);
-            mean += x;
-            valid++;
-        }
-        if (valid == 0) return 0.0;
-        mean /= valid;
-
-        double var = 0.0;
-        for (double v : data) {
-            double x = FilterUtils.sanitize(v, lastOutput);
-            double d = x - mean;
-            var += d * d;
-        }
-        return var / valid; // unbiased correction is not critical for adaptation
-    }
-
+    public double getCurrentFc() { return this.currentFc; }
+    public double getCurrentFs() { return this.fs; }
 }
