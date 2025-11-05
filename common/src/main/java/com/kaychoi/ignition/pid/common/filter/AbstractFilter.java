@@ -2,6 +2,7 @@ package com.kaychoi.ignition.pid.common.filter;
 
 import javax.lang.model.type.NullType;
 import java.util.logging.Logger;
+import com.inductiveautomation.ignition.common.expressions.ExpressionException;
 
 /**
  * Base class for all custom filters.
@@ -53,7 +54,7 @@ public abstract class AbstractFilter {
      *
      * @param args array of new arguments
      */
-    public abstract void updateParameters(double[] args);
+    public abstract void updateParameters(double[] args) throws ExpressionException;
 
     /**
      * Helper to safely extract a Double from various dynamic runtime types.
