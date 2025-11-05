@@ -25,12 +25,13 @@ kaychoi-filter/
 &emsp;├─ TimedObjectManager.java  
 &emsp;├─ UUIDKeyManager.java  
 &emsp;└─ filter/  
-&emsp;&ensp;├─ AbstractFilter.java
-&emsp;&ensp;├─ AdaptiveButterworthFilter.java
+&emsp;&ensp;├─ AbstractFilter.java  
+&emsp;&ensp;├─ AdaptiveButterworthFilter.java  
 &emsp;&ensp;├─ ButterworthIIRFilter.java  
 &emsp;&ensp;├─ CurrentWeightedMovingAverageFilter.java  
 &emsp;&ensp;├─ CustomFilterFunction.java  
 &emsp;&ensp;├─ FilterUtils.java  
+&emsp;&ensp;├─ KalmanFilter.java  
 &emsp;&ensp;└─ WeightedMovingAverageFilter.java  
 
 ## 🧩 Example UDT and Tag Resources
@@ -49,11 +50,13 @@ resources/tags/tags.json
     - Maintains sliding data buffers for time-series filtering.
 
 ### 🔹 Filtering Algorithms
-- **WeightedMovingAverageFilter** — classic weighted average smoothing.
-- **CurrentWeightedMovingAverageFilter** — emphasizes recent samples.
-- **ButterworthIIRFilter** — low-pass Infinite Impulse Response filter for signal stabilization.
-- **AdaptiveButterworthFilter** — low-pass Infinite Impulse Response filter for signal stabilization.
-- **AbstractFilter / FilterUtils** — shared base logic and utility methods.
+- **WeightedMovingAverageFilter** — classic weighted average smoothing (linearly emphasizes recent data).
+- **CurrentWeightedMovingAverageFilter** — emphasizes the most one recent sample with exponential weighting.
+- **ButterworthIIRFilter** — 2nd-order low-pass IIR filter providing smooth attenuation and stable phase.
+- **AdaptiveButterworthFilter** — adaptive low-pass IIR filter that adjusts cutoff frequency based on recent signal activity (EWMA-based).
+- **KalmanFilter** — predictive 2D position-velocity model that estimates both signal value and rate of change for smooth yet responsive tracking.
+- **AbstractFilter / FilterUtils** — shared base logic and utility methods used by all filter types.
+
 
 ## 🧩 Module Purpose
 
@@ -91,6 +94,8 @@ Two expression functions are exposed for direct use inside Ignition bindings or 
 |  **2** | **Weighted Moving Average (WMA)**          | `[windowSize]`<br>Example: `[10]`                        | Linearly increasing weights toward the newest samples.<br>Emphasizes recent trends while suppressing random noise.                     |
 |  **3** | **Butterworth IIR (2nd-order)**            | `[fsHz, fcHz]`<br>Example: `[10.0, 1.0]`                 | Classic low-pass IIR filter.<br>Derives coefficients dynamically from sampling (`fs`) and cutoff (`fc`) frequencies.                   |
 | **3A** | **Adaptive Butterworth IIR**               | `[fsHz, fcHz, adaptGain]`<br>Example: `[10.0, 1.0, 0.2]` | Extends Mode 3, Extends Mode 3 with a self-adaptive cutoff derived from recent signal activity using an EWMA model.<br>When the signal moves → fc′ increases slightly, maintaining smooth yet responsive tracking without overshoot.  |
+|  **4** | **Kalman Filter (2D Position–Velocity Model)** | `[dtMs, Q, R]`<br>Example: `[100, 1e-4, 1e-2]` | Predictive smoother based on a 2D state model `x = [position, velocity]^T`.<br>Tracks both signal value and rate of change.<br>Balances noise suppression (`R`) and responsiveness (`Q`) — ideal for slow or inertial process signals such as temperature or flow. |
+
 
 ### ✅ Example Usage
 
@@ -136,6 +141,7 @@ This module follows a modular and layered architecture to keep filtering logic t
 |             AdaptiveButterworthFilter.java              |
 | FilterUtils.java  **→ helper functions (array ops, etc.)** |
 
+
 ### 🧠 Logical Flow  
 
 1. **Expression Layer (Ignition Binding)**
@@ -154,7 +160,7 @@ This module follows a modular and layered architecture to keep filtering logic t
 
 3. **Filter Engine Layer**  
 
-`Each filter` (WMA, CWMA, Butterworth) extends AbstractFilter.
+`Each filter` (WMA, CWMA, Butterworth, Adaptive Butterworth, Kalman) extends AbstractFilter.
 
 `FilterUtils` converts input lists and computes coefficients.
 **Filters return a single numeric output (the latest filtered result).**
@@ -167,18 +173,19 @@ This section provides concise mathematical representations of the implemented fi
 Each operates on the most recent N samples in the input buffer.
 
 | Mode   | Filter Type                                | Formula                                                                                                                                  | Description                                                                                                                                                                       |
-| ------ | ------------------------------------------ |------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|--------| ------------------------------------------ |------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **1**  | **Current Weighted Moving Average (CWMA)** | `yₙ = α·xₙ + (1 − α)·x̄ₙ₋₁` <br> where `x̄ₙ₋₁` = mean of previous samples                                                                | Blends the **latest sample** `xₙ` with the **average of all previous samples**.<br>`α ∈ [0,1]` controls responsiveness.<br>Higher α → faster response; lower α → smoother output. |
 | **2**  | **Weighted Moving Average (WMA)**          | `yₙ = (Σ wᵢ·xᵢ) / (Σ wᵢ)`<br>where `wᵢ = i`                                                                                              | Computes a **linearly weighted mean** over the last N samples.<br>Recent samples have stronger influence. Provides short-term smoothing without phase distortion.                 |
 | **3**  | **Butterworth IIR (2nd-Order Low-Pass)**   | `yₙ = b₀xₙ + b₁xₙ₋₁ + b₂xₙ₋₂ − a₁yₙ₋₁ − a₂yₙ₋₂`                                                                                          | Classic **2nd-order recursive low-pass** design.<br>Coefficients are derived from cutoff ratio `(fc / fs)`. <br>Produces smooth roll-off with minimal ripple and stable phase.    |
 | **3A** | **Adaptive Butterworth IIR**               | `f_c′ = f_c × (1 + adaptGain × g)`<br> where `activityₙ = (1 − α)·activityₙ₋₁ + α·ㅣ xₙ − yₙ₋₁ㅣ`<br>and `g = activityₙ / (1 + activityₙ)` | Auto-adjusts cutoff `fc` based on signal variance.<br>When input changes rapidly → `fc` increases for faster tracking.<br>When stable → `fc` decreases for stronger smoothing. |
+| **4**  | **Kalman Filter (2D Position–Velocity Model)** | State model:<br>`x = [pos, vel]^T`<br>`xₖ = F·xₖ₋₁ + wₖ`<br>`zₖ = H·xₖ + vₖ`<br>where F = [[1, Δt], [0, 1]], H = [1, 0] | Predictive smoother for slow or inertial process signals.<br>Estimates both **value** and **rate of change**.<br>Balances noise suppression and responsiveness using process noise `Q` and measurement noise `R`. |
 
 ### 📈 Visual Concept Summary
 
 Raw Input Series (Examples)  
 │  
 ├──► **CWMA** (`α` = 0.3)  
-│&emsp;&emsp;Blends the current sample with the average of previous data.  
+│&emsp;&emsp;Blends the current single sample with the average of previous data.  
 │&emsp;&emsp;Provides smooth exponential-like decay while maintaining responsiveness.  
 │  
 ├──► **WMA** (`window` = 10)  
@@ -189,36 +196,44 @@ Raw Input Series (Examples)
 │&emsp;&emsp;2nd-order low-pass response with flat passband and stable phase characteristics.  
 │&emsp;&emsp;Smoothly attenuates high-frequency components without overshoot.  
 │  
-└──► **Adaptive Butterworth** (`fc` = 1 Hz, `fs` = 10 Hz, `g` = 0.3)  
-&emsp;&emsp;Adjusts cutoff dynamically based on input variance.  
-&emsp;&emsp;Faster when signal changes quickly, smoother when stable.  
-
+├──► **Adaptive Butterworth** (`fc` = 1 Hz, `fs` = 10 Hz, `g` = 0.3)  
+│&emsp;&emsp;Adjusts cutoff dynamically based on recent signal activity (EWMA).  
+│&emsp;&emsp;Faster when signal changes rapidly, smoother when stable.  
+│  
+└──► **Kalman Filter** (`dt` = 100 ms, `Q` = 1e-4, `R` = 1e-2)  
+&emsp;&emsp;Predictive 2D model tracking both signal value and velocity.  
+&emsp;&emsp;Provides stable smoothing for slow or inertial processes such as temperature or flow.  
+&emsp;&emsp;Automatically balances responsiveness (`Q`) and noise rejection (`R`).
 
 ### 🧠 Comparison Summary
 
-| Property             | CWMA                              | WMA                         | Butterworth IIR            | Adaptive Butterworth                                   |
-| -------------------- | --------------------------------- | --------------------------- | -------------------------- |--------------------------------------------------------|
-| **Type**             | Exponential weighted average      | Linear weighted average     | 2nd-order recursive filter | Adaptive 2nd-order recursive filter                    |
-| **Core Parameter**   | α (0–1)                           | Window size (N)             | fc, fs                     | fc, fs, adaptGain, α (activity EWMA, fixed value(0.2)) |
-| **Memory Usage**     | 1 running mean                    | N-sample buffer             | 2 input + 2 output states  | Same as Butterworth                                    |
-| **Responsiveness**   | Adjustable via α                  | Fixed by window length             | Tunable via fc/fs          | Auto-adjusted by recent signal activity                |
-| **Smoothness**       | Medium–High                       | Medium                      | High                       | Adaptive (Low–High) depending on input variability     |
-| **Phase Delay**      | Minimal                           | Moderate                    | Moderate–High              | Moderate–High (similar to Butterworth)                 |
-| **Computation Cost** | O(1)                              | O(N)                        | O(1)                       | O(1) + lightweight EWMA update                         |
-| **Best Use Case**    | Simple smoothing / trend blending | Weighted short-term average | Stable low-pass filtering  | Adaptive noise filtering or dynamic signals            |
+| Property             | CWMA                              | WMA                         | Butterworth IIR            | Adaptive Butterworth                                   | Kalman Filter (2D)                                                           |
+| -------------------- | --------------------------------- | --------------------------- | -------------------------- |--------------------------------------------------------|------------------------------------------------------------------------------|
+| **Type**             | Exponential weighted average      | Linear weighted average     | 2nd-order recursive filter | Adaptive 2nd-order recursive filter                    | Predictive state-space estimator                                             |
+| **Core Parameter**   | α (0–1)                           | Window size (N)             | fc, fs                     | fc, fs, adaptGain, α (activity EWMA ≈ 0.2)             | dt, Q, R                                                                     |
+| **Memory Usage**     | 1 running mean                    | N-sample buffer             | 2 input + 2 output states  | Same as Butterworth                                    | 2D state (position, velocity) + covariance matrices                          |
+| **Responsiveness**   | Adjustable via α                  | Fixed by window length      | Tunable via fc/fs          | Auto-adjusted by recent signal activity                | Dynamically balanced via process (Q) and noise (R)                           |
+| **Smoothness**       | Variable (Low–High) depending on α                       | Medium–High                       | High                       | Adaptive (Low–High) depending on input variability     | Variable (depends on Q/R balance) <br> Typically High for stable processes |
+| **Phase Delay**      | Minimal                           | Moderate                    | Moderate–High              | Moderate–High (similar to Butterworth)                 | Minimal to moderate (predictive compensation)                                |
+| **Computation Cost** | O(1)                              | O(N)                        | O(1)                       | O(1) + lightweight EWMA update                         | O(1) per step (matrix operations)                                            |
+| **Best Use Case**    | Simple smoothing / trend blending | Weighted short-term average | Stable low-pass filtering  | Adaptive noise filtering or dynamic signals            | Slow or inertial process signals (temperature, flow)                         |
 
 
 
 ### 🧩 Practical Guidelines
 
 For **slowly varying process values** (temperature, tank level, etc.), use `CWMA` **(mode 1)** with α ≈ 0.2–0.4.
+- to give higher weight to historical stability while maintaining modest responsiveness to new data.
 
 For **batch or averaged sensor data**, use `WMA` **(mode 2)** with window size ≈ size/2.
 
 For **high-frequency noisy signals**, use `Butterworth` **(mode 3)** with fc/fs ratio ≈ 0.05–0.1.
 
-For **gradually changing process signals**, use `Adaptive Butterworth`1` **(mode 3A)** <br>
+For **gradually changing process signals**, use `Adaptive Butterworth` **(mode 3A)** <br>
 — a self-adjusting smoother that adapts cutoff based on recent signal activity (EWMA).
+
+For **slow or inertial process signals**, use `Kalman Filter` **(mode 4)** <br>
+— a predictive smoother that estimates both value and rate of change using a 2D position–velocity model.
 
 ---
 
